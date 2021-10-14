@@ -15,10 +15,12 @@
 					</label>
 				</td>
 				<td class="availability-slots">
-					<DatetimePicker type="time" format="H:mm" />
+					<DatetimePicker type="time" class="start-date" format="H:mm" />
 					{{ $t('dav', 'to') }}
-					<DatetimePicker type="time" format="H:mm" />
-					<span class="add-another">{{ $t('dav', 'Add slot') }}</span>
+					<DatetimePicker type="time" class="end-date" format="H:mm" />
+					<button class="add-another button">
+						{{ $t('dav', 'Add slot') }}
+					</button>
 				</td>
 			</tr>
 		</table>
@@ -78,7 +80,11 @@ export default {
 .availability-slots {
 	padding: 10px 10px 20px 10px;
 }
-.add-another {
-	text-decoration: underline;
+::v-deep .mx-input-wrapper {
+	width: 85px;
 }
+::v-deep .mx-datepicker {
+	width: 110px;
+}
+
 </style>
