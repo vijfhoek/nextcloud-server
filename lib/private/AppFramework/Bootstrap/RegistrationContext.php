@@ -26,9 +26,11 @@ declare(strict_types=1);
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 namespace OC\AppFramework\Bootstrap;
 
 use Closure;
+use function array_shift;
 use OC\Support\CrashReport\Registry;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
@@ -43,11 +45,12 @@ use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Template\ICustomTemplateProvider;
 use OCP\Http\WellKnown\IHandler;
 use OCP\Notification\INotifier;
+use OCP\Profile\ILinkAction;
+use OCP\Profile\IProfileManager;
 use OCP\Search\IProvider;
 use OCP\Support\CrashReport\IReporter;
 use Psr\Log\LoggerInterface;
 use Throwable;
-use function array_shift;
 
 class RegistrationContext {
 
@@ -59,6 +62,9 @@ class RegistrationContext {
 
 	/** @var ServiceRegistration<IWidget>[] */
 	private $dashboardPanels = [];
+
+	/** @var ServiceRegistration<ILinkAction>[] */
+	private $profileActions = [];
 
 	/** @var ServiceFactoryRegistration[] */
 	private $services = [];
@@ -137,6 +143,13 @@ class RegistrationContext {
 				$this->context->registerDashboardPanel(
 					$this->appId,
 					$widgetClass
+				);
+			}
+
+			public function registerProfileAction(string $actionClass): void {
+				$this->context->registerProfileAction(
+					$this->appId,
+					$actionClass
 				);
 			}
 
@@ -260,6 +273,13 @@ class RegistrationContext {
 		$this->dashboardPanels[] = new ServiceRegistration($appId, $panelClass);
 	}
 
+	/**
+	 * @psalm-param class-string<ILinkAction> $capability
+	 */
+	public function registerProfileAction(string $appId, string $actionClass): void {
+		$this->profileActions[] = new ServiceRegistration($appId, $actionClass);
+	}
+
 	public function registerService(string $appId, string $name, callable $factory, bool $shared = true): void {
 		$this->services[] = new ServiceFactoryRegistration($appId, $name, $factory, $shared);
 	}
@@ -367,6 +387,22 @@ class RegistrationContext {
 			} catch (Throwable $e) {
 				$appId = $panel->getAppId();
 				$this->logger->error("Error during dashboard registration of $appId: " . $e->getMessage(), [
+					'exception' => $e,
+				]);
+			}
+		}
+	}
+
+	/**
+	 * @param App[] $apps
+	 */
+	public function delegateProfileActionRegistrations(array $apps, IProfileManager $profileManager): void {
+		while (($action = array_shift($this->profileActions)) !== null) {
+			try {
+				$profileManager->queueAction($action->getService());
+			} catch (Throwable $e) {
+				$appId = $action->getAppId();
+				$this->logger->error("Error during queuing of profile action for $appId: " . $e->getMessage(), [
 					'exception' => $e,
 				]);
 			}
