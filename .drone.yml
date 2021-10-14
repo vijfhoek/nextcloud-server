@@ -2165,17 +2165,18 @@ steps:
     environment:
       MINIO_ROOT_USER: nextcloud
       MINIO_ROOT_PASSWORD: nextcloud
-  - name: submodules
-    image: ghcr.io/nextcloud/continuous-integration-alpine-git:latest
-    commands:
-      - git submodule update --init
   - name: object-store
-    image: ghcr.io/nextcloud/continuous-integration-php7.4:php7.4-3
+    image: ghcr.io/nextcloud/continuous-integration-integration-php7.4:latest
     environment:
       OBJECT_STORE: s3
+      CACHING: apcu
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
     commands:
+      - apt update && apt install php7.4-apcu
+      - echo "apc.enabled=1" >> /etc/php/7.4/cli/conf.d/nextcloud.ini
+      - echo "apc.enable_cli=1" >> /etc/php/7.4/cli/conf.d/nextcloud.ini
+      - php -i
       - ./tests/drone-wait-objectstore.sh
       - bash tests/drone-run-integration-tests.sh || exit 0
       - cp tests/preseed-config.php config/config.php

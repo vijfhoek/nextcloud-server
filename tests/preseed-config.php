@@ -93,3 +93,10 @@ if (getenv('OBJECT_STORE') === 'azure') {
 		]
 	];
 }
+
+
+if (getenv('CACHING') === 'apcu') {
+	$CONFIG['memcache.local'] = '\\OC\\Memcache\\APCu';
+	$CONFIG['memcache.distributed'] = '\\OC\\Memcache\\APCu';
+}
+
