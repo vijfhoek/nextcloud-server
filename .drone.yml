@@ -2165,6 +2165,10 @@ steps:
     environment:
       MINIO_ROOT_USER: nextcloud
       MINIO_ROOT_PASSWORD: nextcloud
+  - name: submodules
+    image: ghcr.io/nextcloud/continuous-integration-alpine-git:latest
+    commands:
+      - git submodule update --init
   - name: object-store
     image: ghcr.io/nextcloud/continuous-integration-integration-php7.4:latest
     environment:
