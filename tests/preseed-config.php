@@ -27,7 +27,7 @@ if (getenv('OBJECT_STORE') === 's3') {
 			'autocreate' => true,
 			'key' => 'nextcloud',
 			'secret' => 'nextcloud',
-			'hostname' => getenv('DRONE') === 'true' ? 'minio' : 'localhost',
+			'hostname' => getenv('DRONE') === 'true' ? 'minio' : 'minio',
 			'port' => 9000,
 			'use_ssl' => false,
 			// required for some non amazon s3 implementations
@@ -99,4 +99,3 @@ if (getenv('CACHING') === 'apcu') {
 	$CONFIG['memcache.local'] = '\\OC\\Memcache\\APCu';
 	$CONFIG['memcache.distributed'] = '\\OC\\Memcache\\APCu';
 }
-
