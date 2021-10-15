@@ -47,7 +47,6 @@ use OC\Search\SearchQuery;
 use OC\Template\JSCombiner;
 use OC\Template\JSConfigHelper;
 use OC\Template\SCSSCacher;
-use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Defaults;
 use OCP\IConfig;
@@ -55,7 +54,6 @@ use OCP\IInitialStateService;
 use OCP\INavigationManager;
 use OCP\IUserSession;
 use OCP\Support\Subscription\IRegistry;
-use OCP\UserStatus\IManager as IUserStatusManager;
 use OCP\Util;
 
 class TemplateLayout extends \OC_Template {
@@ -138,13 +136,6 @@ class TemplateLayout extends \OC_Template {
 			} else {
 				$this->assign('userAvatarSet', true);
 				$this->assign('userAvatarVersion', $this->config->getUserValue(\OC_User::getUser(), 'avatar', 'version', 0));
-				if (\OC::$server->get(IAppManager::class)->isEnabledForUser('user_status')) {
-					$userStatusManager = \OC::$server->get(IUserStatusManager::class);
-					$userStatus = $userStatusManager->getUserStatuses([$user->getUID()])[$user->getUID()];
-					$this->assign('userStatus', $userStatus);
-				} else {
-					$this->assign('userStatus', null);
-				}
 			}
 
 			// check if app menu icons should be inverted

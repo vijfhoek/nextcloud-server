@@ -25,21 +25,22 @@ declare(strict_types=1);
  */
 namespace OC\UserStatus;
 
-use OCP\ILogger;
 use OCP\IServerContainer;
 use OCP\UserStatus\IManager;
 use OCP\UserStatus\IProvider;
+use OCP\UserStatus\ISettableProvider;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Log\LoggerInterface;
 
 class Manager implements IManager {
 
 	/** @var IServerContainer */
 	private $container;
 
-	/** @var ILogger */
+	/** @var LoggerInterface */
 	private $logger;
 
-	/** @var null */
+	/** @var class-string */
 	private $providerClass;
 
 	/** @var IProvider */
@@ -49,10 +50,10 @@ class Manager implements IManager {
 	 * Manager constructor.
 	 *
 	 * @param IServerContainer $container
-	 * @param ILogger $logger
+	 * @param LoggerInterface $logger
 	 */
 	public function __construct(IServerContainer $container,
-								ILogger $logger) {
+								LoggerInterface $logger) {
 		$this->container = $container;
 		$this->logger = $logger;
 	}
@@ -70,7 +71,7 @@ class Manager implements IManager {
 	}
 
 	/**
-	 * @param string $class
+	 * @param class-string $class
 	 * @since 20.0.0
 	 * @internal
 	 */
@@ -93,9 +94,8 @@ class Manager implements IManager {
 		try {
 			$provider = $this->container->get($this->providerClass);
 		} catch (ContainerExceptionInterface $e) {
-			$this->logger->logException($e, [
-				'message' => 'Could not load user-status provider dynamically: ' . $e->getMessage(),
-				'level' => ILogger::ERROR,
+			$this->logger->error('Could not load user-status provider dynamically: ' . $e->getMessage(), [
+				'exception' => $e,
 			]);
 			return;
 		}
@@ -105,7 +105,7 @@ class Manager implements IManager {
 
 	public function setUserStatus(string $userId, string $messageId, string $status, bool $createBackup = false): void {
 		$this->setupProvider();
-		if (!$this->provider) {
+		if (!$this->provider || !($this->provider instanceof ISettableProvider)) {
 			return;
 		}
 
@@ -114,7 +114,7 @@ class Manager implements IManager {
 
 	public function revertUserStatus(string $userId, string $messageId, string $status): void {
 		$this->setupProvider();
-		if (!$this->provider) {
+		if (!$this->provider || !($this->provider instanceof ISettableProvider)) {
 			return;
 		}
 		$this->provider->revertUserStatus($userId, $messageId, $status);
