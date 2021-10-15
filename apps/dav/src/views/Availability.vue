@@ -4,13 +4,15 @@
 		<p>
 			{{ $t('dav', 'If you configure your working hours, other users will see when you are out of office when they book a meeting.') }}
 		</p>
-		<strong>
-			{{ $t('calendar', 'Please select a time zone:') }}
-		</strong>
-		<TimezonePicker
-			class="timezone-popover-wrapper__timezone-select"
-			:value="timezoneId"
-			@input="changeTimezone" />
+		<div class="time-zone">
+			<strong>
+				{{ $t('calendar', 'Please select a time zone:') }}
+			</strong>
+			<TimezonePicker
+				class="timezone-popover-wrapper__timezone-select"
+				:value="timezoneId"
+				@input="changeTimezone" />
+		</div>
 		<table>
 			<tr v-for="day in daysOfTheWeek" :key="day.id">
 				<td class="availability-day">
@@ -93,7 +95,7 @@ export default {
 
 <style lang="scss" scoped>
 .availability-day {
-	padding: 10px;
+	padding: 0 10px 10px 10px;
 }
 .availability-slots {
 	padding: 10px 10px 20px 10px;
@@ -104,5 +106,11 @@ export default {
 ::v-deep .mx-datepicker {
 	width: 110px;
 }
-
+::v-deep .multiselect {
+	border: 1px solid var(--color-border-dark);
+	width: 120px;
+}
+.time-zone {
+	padding: 12px 12px 12px 0px;
+}
 </style>
