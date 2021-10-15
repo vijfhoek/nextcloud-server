@@ -11,32 +11,41 @@
 			<TimezonePicker
 				class="timezone-popover-wrapper__timezone-select" />
 		</div>
-		<div v-for="day in daysOfTheWeek" :key="day.id" class="grid-table">
-			<div class="availability-day">
-				<input :id="`toggle-day-${day.id}`"
-					v-model="day.active"
-					type="checkbox"
-					class="checkbox">
-				<label :for="`toggle-day-${day.id}`">
-					{{ day.displayName }}
-				</label>
-			</div>
-			<div class="availability-slots">
-				<template v-for="slot in day.slots">
-					<DatetimePicker v-model="slot.start"
-						type="time"
-						class="start-date"
-						format="H:mm" />
-					{{ $t('dav', 'to') }}
-					<DatetimePicker v-model="slot.end"
-						type="time"
-						class="end-date"
-						format="H:mm" />
-				</template>
-				<button class="add-another button" @click="addSlot(day)">
+		<div class="grid-table">
+			<template v-for="day in daysOfTheWeek">
+				<div :key="day.id + 1">
+					<input
+						:id="`toggle-day-${day.id}`"
+						v-model="day.active"
+						class="availability-day"
+						type="checkbox">
+					<label :for="`toggle-day-${day.id}`">
+						{{ day.displayName }}
+					</label>
+				</div>
+				<div :key="day.id + 1" class="availability-slots">
+					<div class="availability-slot">
+						<template v-for="slot in day.slots">
+							<div :key="day.id + 2" class="row">
+								<DatetimePicker
+									v-model="slot.start"
+									type="time"
+									class="start-date"
+									format="H:mm" />
+								{{ $t('dav', 'to') }}
+								<DatetimePicker
+									v-model="slot.end"
+									type="time"
+									class="end-date"
+									format="H:mm" />
+							</div>
+						</template>
+					</div>
+				</div>
+				<button :key="day.id + 6" class="add-another button" @click="addSlot(day)">
 					{{ $t('dav', 'Add slot') }}
 				</button>
-			</div>
+			</template>
 		</div>
 	</div>
 </template>
@@ -135,11 +144,14 @@ export default {
 <style lang="scss" scoped>
 .availability-day {
 	padding: 0 10px 10px 10px;
-	min-width: 140px;
 	margin-top: 20px;
 }
 .availability-slots {
-	padding: 10px 10px 20px 10px;
+	display: flex;
+}
+.availability-slot {
+	display: flex;
+	flex-direction: column;
 }
 ::v-deep .mx-input-wrapper {
 	width: 85px;
@@ -156,6 +168,6 @@ export default {
 }
 .grid-table {
 	display: grid;
-	grid-template-columns: min-content 500px 500px ;
+	grid-template-columns: min-content auto;
 }
 </style>
