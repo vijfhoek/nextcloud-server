@@ -11,29 +11,33 @@
 			<TimezonePicker
 				class="timezone-popover-wrapper__timezone-select" />
 		</div>
-		<table>
-			<tr v-for="day in daysOfTheWeek" :key="day.id">
-				<td class="availability-day">
-					<input :id="`toggle-day-${day.id}`"
-						type="checkbox"
-					    v-model="day.active"
-						class="checkbox">
-					<label :for="`toggle-day-${day.id}`">
-						{{ day.displayName }}
-					</label>
-				</td>
-				<td class="availability-slots">
-					<template v-for="slot in day.slots">
-						<DatetimePicker type="time" class="start-date" format="H:mm" v-model="slot.start"/>
-						{{ $t('dav', 'to') }}
-						<DatetimePicker type="time" class="end-date" format="H:mm" v-model="slot.end"/>
-					</template>
-					<button @click="addSlot(day)" class="add-another button">
-						{{ $t('dav', 'Add slot') }}
-					</button>
-				</td>
-			</tr>
-		</table>
+		<div v-for="day in daysOfTheWeek" :key="day.id" class="grid-table">
+			<div class="availability-day">
+				<input :id="`toggle-day-${day.id}`"
+					v-model="day.active"
+					type="checkbox"
+					class="checkbox">
+				<label :for="`toggle-day-${day.id}`">
+					{{ day.displayName }}
+				</label>
+			</div>
+			<div class="availability-slots">
+				<template v-for="slot in day.slots">
+					<DatetimePicker v-model="slot.start"
+						type="time"
+						class="start-date"
+						format="H:mm" />
+					{{ $t('dav', 'to') }}
+					<DatetimePicker v-model="slot.end"
+						type="time"
+						class="end-date"
+						format="H:mm" />
+				</template>
+				<button class="add-another button" @click="addSlot(day)">
+					{{ $t('dav', 'Add slot') }}
+				</button>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -123,14 +127,16 @@ export default {
 				start,
 				end,
 			})
-		}
-	}
+		},
+	},
 }
 </script>
 
 <style lang="scss" scoped>
 .availability-day {
 	padding: 0 10px 10px 10px;
+	min-width: 140px;
+	margin-top: 20px;
 }
 .availability-slots {
 	padding: 10px 10px 20px 10px;
@@ -147,5 +153,9 @@ export default {
 }
 .time-zone {
 	padding: 12px 12px 12px 0px;
+}
+.grid-table {
+	display: grid;
+	grid-template-columns: min-content 500px 500px ;
 }
 </style>
