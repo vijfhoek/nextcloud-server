@@ -19,14 +19,14 @@
 						v-model="day.active"
 						class="availability-day"
 						type="checkbox">
-					<label :for="`toggle-day-${day.id}`">
+					<label :for="`toggle-day-${day.id}`" class="label-weekday">
 						{{ day.displayName }}
 					</label>
 				</div>
 				<div :key="day.id + 1" class="availability-slots">
 					<div class="availability-slot">
 						<template v-for="slot in day.slots">
-							<div :key="day.id + 2" class="row">
+							<div :key="slot">
 								<DatetimePicker
 									v-model="slot.start"
 									type="time"
@@ -41,10 +41,10 @@
 							</div>
 						</template>
 					</div>
+					<button :key="day.id + 6" class="add-another button" @click="addSlot(day)">
+						{{ $t('dav', 'Add slot') }}
+					</button>
 				</div>
-				<button :key="day.id + 6" class="add-another button" @click="addSlot(day)">
-					{{ $t('dav', 'Add slot') }}
-				</button>
 			</template>
 		</div>
 	</div>
@@ -111,14 +111,12 @@ export default {
 	},
 	async mounted() {
 		const { slots } = await findScheduleInboxAvailability()
-
 		if (slots) {
 			this.daysOfTheWeek.forEach(day => {
 				day.slots.push(...slots[day.id])
 				day.active = slots[day.id].length > 0
 			})
 		}
-
 		console.info('availability loaded', this.daysOfTheWeek)
 	},
 	methods: {
@@ -131,7 +129,6 @@ export default {
 			end.setHours(17)
 			end.setMinutes(0)
 			end.setSeconds(0)
-
 			day.slots.push({
 				start,
 				end,
@@ -170,4 +167,9 @@ export default {
 	display: grid;
 	grid-template-columns: min-content auto;
 }
+.button {
+	height: 44px;
+	align-self: flex-end;
+}
+
 </style>
