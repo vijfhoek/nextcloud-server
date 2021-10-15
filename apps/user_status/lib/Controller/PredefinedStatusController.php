@@ -60,6 +60,8 @@ class PredefinedStatusController extends OCSController {
 	 * @return DataResponse
 	 */
 	public function findAll():DataResponse {
-		return new DataResponse($this->predefinedStatusService->getDefaultStatuses());
+		return new DataResponse(array_filter($this->predefinedStatusService->getDefaultStatuses(), function (array $status) {
+			return !array_key_exists('visible', $status) || $status['visible'] === true;
+		}));
 	}
 }

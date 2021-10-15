@@ -28,7 +28,7 @@ namespace OC\UserStatus;
 use OCP\IServerContainer;
 use OCP\UserStatus\IManager;
 use OCP\UserStatus\IProvider;
-use OCP\UserStatus\ISettableProvider;
+use OC\UserStatus\ISettableProvider;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Log\LoggerInterface;
 
@@ -40,11 +40,11 @@ class Manager implements IManager {
 	/** @var LoggerInterface */
 	private $logger;
 
-	/** @var class-string */
-	private $providerClass;
+	/** @var class-string[] */
+	private $providersClass;
 
-	/** @var IProvider */
-	private $provider;
+	/** @var array<class-string, IProvider> */
+	private $providers;
 
 	/**
 	 * Manager constructor.
@@ -63,11 +63,15 @@ class Manager implements IManager {
 	 */
 	public function getUserStatuses(array $userIds): array {
 		$this->setupProvider();
-		if (!$this->provider) {
+		if (count($this->providers) === 0) {
 			return [];
 		}
 
-		return $this->provider->getUserStatuses($userIds);
+		foreach ($this->providers as $provider) {
+			// TODO merge results instead of taking the first one.
+			return $provider->getUserStatuses($userIds);
+		}
+		return [];
 	}
 
 	/**
@@ -76,47 +80,50 @@ class Manager implements IManager {
 	 * @internal
 	 */
 	public function registerProvider(string $class): void {
-		$this->providerClass = $class;
-		$this->provider = null;
+		$this->providersClass[] = $class;
 	}
 
 	/**
 	 * Lazily set up provider
 	 */
 	private function setupProvider(): void {
-		if ($this->provider !== null) {
-			return;
-		}
-		if ($this->providerClass === null) {
+		if (count($this->providersClass) === count($this->providers)) {
 			return;
 		}
 
-		try {
-			$provider = $this->container->get($this->providerClass);
-		} catch (ContainerExceptionInterface $e) {
-			$this->logger->error('Could not load user-status provider dynamically: ' . $e->getMessage(), [
-				'exception' => $e,
-			]);
-			return;
+		foreach ($this->providersClass as $providerClass) {
+			if (array_key_exists($providerClass, $this->providers)) {
+				continue;
+			}
+			try {
+				$this->providers[$providerClass] = $this->container->get($providerClass);
+			} catch (ContainerExceptionInterface $e) {
+				$this->logger->error('Could not load user-status "' . $this->providersClass . '" provider dynamically: ' . $e->getMessage(), [
+					'exception' => $e,
+				]);
+				continue;
+			}
 		}
-
-		$this->provider = $provider;
 	}
 
 	public function setUserStatus(string $userId, string $messageId, string $status, bool $createBackup = false): void {
 		$this->setupProvider();
-		if (!$this->provider || !($this->provider instanceof ISettableProvider)) {
-			return;
-		}
+		foreach ($this->providers as $provider) {
+			if (!$provider || !($provider instanceof ISettableProvider)) {
+				continue;
+			}
 
-		$this->provider->setUserStatus($userId, $messageId, $status, $createBackup);
+			$provider->setUserStatus($userId, $messageId, $status, $createBackup);
+		}
 	}
 
 	public function revertUserStatus(string $userId, string $messageId, string $status): void {
 		$this->setupProvider();
-		if (!$this->provider || !($this->provider instanceof ISettableProvider)) {
-			return;
+		foreach ($this->providers as $provider) {
+			if (!$provider || !($provider instanceof ISettableProvider)) {
+				continue;
+			}
+			$provider->revertUserStatus($userId, $messageId, $status);
 		}
-		$this->provider->revertUserStatus($userId, $messageId, $status);
 	}
 }

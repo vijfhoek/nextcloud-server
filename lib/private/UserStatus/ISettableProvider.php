@@ -23,12 +23,13 @@ declare(strict_types=1);
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-namespace OCP\UserStatus;
+namespace OC\UserStatus;
+
+use OCP\UserStatus\IProvider;
 
 /**
  * Interface ISettableProvider
- *
- * @package OCP\UserStatus
+ * @package OC\UserStatus
  */
 interface ISettableProvider extends IProvider {
 	/**
@@ -38,9 +39,8 @@ interface ISettableProvider extends IProvider {
 	 * @param string $messageId The new message id.
 	 * @param string $status The new status.
 	 * @param bool $createBackup If true, this will store the old status so that it is possible to revert it later (e.g. after a call).
-	 * @since 23.0.0
 	 */
-	public function setUserStatus(string $userId, string $messageId, string $status, bool $createBackup = false): void;
+	public function setUserStatus(string $userId, string $messageId, string $status, bool $createBackup): void;
 
 	/**
 	 * Revert an automatically set user status. For example after leaving a call,
@@ -50,7 +50,6 @@ interface ISettableProvider extends IProvider {
 	 * @param string $userId The user for which we want to update the status.
 	 * @param string $messageId The expected current messageId.
 	 * @param string $status The expected current status.
-	 * @since 23.0.0
 	 */
 	public function revertUserStatus(string $userId, string $messageId, string $status): void;
 }
