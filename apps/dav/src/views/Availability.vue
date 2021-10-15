@@ -9,25 +9,26 @@
 				{{ $t('calendar', 'Please select a time zone:') }}
 			</strong>
 			<TimezonePicker
-				class="timezone-popover-wrapper__timezone-select"
-				:value="timezoneId"
-				@input="changeTimezone" />
+				class="timezone-popover-wrapper__timezone-select" />
 		</div>
 		<table>
 			<tr v-for="day in daysOfTheWeek" :key="day.id">
 				<td class="availability-day">
 					<input :id="`toggle-day-${day.id}`"
 						type="checkbox"
+					    v-model="day.active"
 						class="checkbox">
 					<label :for="`toggle-day-${day.id}`">
 						{{ day.displayName }}
 					</label>
 				</td>
 				<td class="availability-slots">
-					<DatetimePicker type="time" class="start-date" format="H:mm" />
-					{{ $t('dav', 'to') }}
-					<DatetimePicker type="time" class="end-date" format="H:mm" />
-					<button class="add-another button">
+					<template v-for="slot in day.slots">
+						<DatetimePicker type="time" class="start-date" format="H:mm" v-model="slot.start"/>
+						{{ $t('dav', 'to') }}
+						<DatetimePicker type="time" class="end-date" format="H:mm" v-model="slot.end"/>
+					</template>
+					<button @click="addSlot(day)" class="add-another button">
 						{{ $t('dav', 'Add slot') }}
 					</button>
 				</td>
@@ -38,6 +39,7 @@
 
 <script>
 import DatetimePicker from '@nextcloud/vue/dist/Components/DatetimePicker'
+import { findScheduleInboxAvailability } from '../service/CalendarService'
 import TimezonePicker from '@nextcloud/vue/dist/Components/TimezonePicker'
 export default {
 	name: 'Availability',
@@ -50,46 +52,79 @@ export default {
 		return {
 			daysOfTheWeek: [
 				{
-					id: 'mo',
+					id: 'MO',
+					active: false,
 					displayName: this.$t('dav', 'Monday'),
+					slots: [],
 				},
 				{
-					id: 'tu',
+					id: 'TU',
+					active: false,
 					displayName: this.$t('dav', 'Tuesday'),
+					slots: [],
 				},
 				{
-					id: 'we',
+					id: 'WE',
+					active: false,
 					displayName: this.$t('dav', 'Wednesday'),
+					slots: [],
 				},
 				{
-					id: 'th',
+					id: 'TH',
+					active: false,
 					displayName: this.$t('dav', 'Thursday'),
+					slots: [],
 				},
 				{
-					id: 'fr',
+					id: 'FR',
+					active: false,
 					displayName: this.$t('dav', 'Friday'),
+					slots: [],
 				},
 				{
-					id: 'sa',
+					id: 'SA',
+					active: false,
 					displayName: this.$t('dav', 'Saturday'),
+					slots: [],
 				},
 				{
-					id: 'su',
+					id: 'SU',
+					active: false,
 					displayName: this.$t('dav', 'Sunday'),
+					slots: [],
 				},
 			],
 		}
 	},
-	methods: {
-		/**
-		 * Emits a change event for the Timezone
-		 *
-		 * @param {string} timezoneId The new timezoneId
-		 */
-		changeTimezone(timezoneId) {
-			this.$emit('change-timezone', timezoneId)
-		},
+	async mounted() {
+		const { slots } = await findScheduleInboxAvailability()
+
+		if (slots) {
+			this.daysOfTheWeek.forEach(day => {
+				day.slots.push(...slots[day.id])
+				day.active = slots[day.id].length > 0
+			})
+		}
+
+		console.info('availability loaded', this.daysOfTheWeek)
 	},
+	methods: {
+		addSlot(day) {
+			const start = new Date()
+			start.setHours(9)
+			start.setMinutes(0)
+			start.setSeconds(0)
+			const end = new Date()
+			end.setHours(17)
+			end.setMinutes(0)
+			end.setSeconds(0)
+
+			day.slots.push({
+				start,
+				end,
+			})
+		}
+	}
 }
 </script>
 
