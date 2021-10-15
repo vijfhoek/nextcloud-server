@@ -4,6 +4,13 @@
 		<p>
 			{{ $t('dav', 'If you configure your working hours, other users will see when you are out of office when they book a meeting.') }}
 		</p>
+		<strong>
+			{{ $t('calendar', 'Please select a time zone:') }}
+		</strong>
+		<TimezonePicker
+			class="timezone-popover-wrapper__timezone-select"
+			:value="timezoneId"
+			@input="changeTimezone" />
 		<table>
 			<tr v-for="day in daysOfTheWeek" :key="day.id">
 				<td class="availability-day">
@@ -29,11 +36,12 @@
 
 <script>
 import DatetimePicker from '@nextcloud/vue/dist/Components/DatetimePicker'
-
+import TimezonePicker from '@nextcloud/vue/dist/Components/TimezonePicker'
 export default {
 	name: 'Availability',
 	components: {
 		DatetimePicker,
+		TimezonePicker,
 	},
 	data() {
 		// TODO: reorder if Sunday is the first day of the week
@@ -69,6 +77,16 @@ export default {
 				},
 			],
 		}
+	},
+	methods: {
+		/**
+		 * Emits a change event for the Timezone
+		 *
+		 * @param {string} timezoneId The new timezoneId
+		 */
+		changeTimezone(timezoneId) {
+			this.$emit('change-timezone', timezoneId)
+		},
 	},
 }
 </script>
